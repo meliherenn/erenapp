@@ -4,6 +4,7 @@ class Product {
   final String description;
   final double price;
   final String thumbnail;
+  final List<String> images;
 
   Product({
     required this.id,
@@ -11,9 +12,9 @@ class Product {
     required this.description,
     required this.price,
     required this.thumbnail,
+    required this.images,
   });
 
-  // API'den gelen JSON verisini Product nesnesine çevirir
   factory Product.fromJson(Map<String, dynamic> json) {
     return Product(
       id: json['id'],
@@ -21,11 +22,10 @@ class Product {
       description: json['description'],
       price: (json['price'] as num).toDouble(),
       thumbnail: json['thumbnail'],
+      images: List<String>.from(json['images']),
     );
   }
 
-  // Product nesnesini Firestore'a göndermek için Map'e çevirir
-  // YENİ EKLENEN KISIM BURASI
   Map<String, dynamic> toMap() {
     return {
       'id': id,
@@ -33,6 +33,7 @@ class Product {
       'description': description,
       'price': price,
       'thumbnail': thumbnail,
+      'images': images,
     };
   }
 }

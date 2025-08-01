@@ -1,8 +1,8 @@
-import 'package:erenapp/screens/home_screen.dart'; // Dosya adını kendi projenize göre düzenleyin
-import 'package:erenapp/screens/register_screen.dart'; // Dosya adını kendi projenize göre düzenleyin
+import 'package:erenapp/screens/forgot_password_screen.dart';
+import 'package:erenapp/screens/main_screen.dart';
 import 'package:flutter/material.dart';
-import 'package:flutter_screenutil/flutter_screenutil.dart';
 import 'package:firebase_auth/firebase_auth.dart';
+import 'package:erenapp/screens/register_screen.dart';
 
 class LoginScreen extends StatefulWidget {
   const LoginScreen({super.key});
@@ -12,9 +12,10 @@ class LoginScreen extends StatefulWidget {
 }
 
 class _LoginScreenState extends State<LoginScreen> {
-  final _formKey = GlobalKey<FormState>();
   final _emailController = TextEditingController();
   final _passwordController = TextEditingController();
+  final _formKey = GlobalKey<FormState>();
+  bool _isLoading = false;
 
   @override
   void dispose() {
@@ -23,35 +24,44 @@ class _LoginScreenState extends State<LoginScreen> {
     super.dispose();
   }
 
-  Future<void> _loginUser() async {
-    if (_formKey.currentState!.validate()) {
-      try {
-        final userCredential =
-        await FirebaseAuth.instance.signInWithEmailAndPassword(
-          email: _emailController.text.trim(),
-          password: _passwordController.text.trim(),
-        );
+  Future<void> _login() async {
+    if (!_formKey.currentState!.validate()) {
+      return;
+    }
 
-        if (userCredential.user != null && mounted) {
-          Navigator.pushReplacement(
-            context,
-            MaterialPageRoute(builder: (context) => const HomeScreen()),
-          );
-        }
-      } on FirebaseAuthException catch (e) {
-        if (mounted) {
-          ScaffoldMessenger.of(context).showSnackBar(
-            SnackBar(
-                content: Text(e.message ??
-                    'Giriş başarısız, lütfen bilgilerinizi kontrol edin.')),
-          );
-        }
-      } catch (e) {
-        if (mounted) {
-          ScaffoldMessenger.of(context).showSnackBar(
-            SnackBar(content: Text('Bir hata oluştu: $e')),
-          );
-        }
+    setState(() {
+      _isLoading = true;
+    });
+
+    try {
+      await FirebaseAuth.instance.signInWithEmailAndPassword(
+        email: _emailController.text.trim(),
+        password: _passwordController.text.trim(),
+      );
+
+      if (mounted) {
+        Navigator.pushReplacement(
+          context,
+          MaterialPageRoute(builder: (context) => const MainScreen()),
+        );
+      }
+    } on FirebaseAuthException catch (e) {
+      String message = 'Bir hata oluştu.';
+      if (e.code == 'user-not-found' || e.code == 'invalid-credential') {
+        message = 'E-posta veya şifre hatalı. Lütfen kontrol edin.';
+      } else if (e.code == 'wrong-password') {
+        message = 'Yanlış şifre girdiniz.';
+      }
+      if (mounted) {
+        ScaffoldMessenger.of(context).showSnackBar(
+          SnackBar(content: Text(message)),
+        );
+      }
+    } finally {
+      if (mounted) {
+        setState(() {
+          _isLoading = false;
+        });
       }
     }
   }
@@ -61,86 +71,77 @@ class _LoginScreenState extends State<LoginScreen> {
     return Scaffold(
       appBar: AppBar(
         title: const Text('Giriş Yap'),
-        centerTitle: true,
-        toolbarHeight: 56.h,
+        automaticallyImplyLeading: false,
       ),
       body: Center(
         child: SingleChildScrollView(
-          padding: EdgeInsets.symmetric(horizontal: 22.0.w),
+          padding: const EdgeInsets.all(16.0),
           child: Form(
             key: _formKey,
             child: Column(
               mainAxisAlignment: MainAxisAlignment.center,
               children: [
-                Image.asset(
-                  'assets/erenshop.png',
-                  height: 220.h,
-                ),
-                SizedBox(height: 5.h),
                 TextFormField(
                   controller: _emailController,
                   decoration: const InputDecoration(
                     labelText: 'E-posta',
-                    hintText: 'ornek@gmail.com',
-                    prefixIcon: Icon(Icons.email),
                     border: OutlineInputBorder(),
+                    prefixIcon: Icon(Icons.email),
                   ),
                   keyboardType: TextInputType.emailAddress,
                   validator: (value) {
-                    if (value == null || value.isEmpty) {
-                      return 'Lütfen e-posta adresinizi girin.';
-                    }
-                    if (!value.contains('@')) {
+                    if (value == null || !value.contains('@')) {
                       return 'Lütfen geçerli bir e-posta adresi girin.';
                     }
                     return null;
                   },
                 ),
-                SizedBox(height: 5.h),
+                const SizedBox(height: 16),
                 TextFormField(
                   controller: _passwordController,
-                  obscureText: true,
                   decoration: const InputDecoration(
                     labelText: 'Şifre',
-                    prefixIcon: Icon(Icons.lock),
                     border: OutlineInputBorder(),
+                    prefixIcon: Icon(Icons.lock),
                   ),
+                  obscureText: true,
                   validator: (value) {
-                    if (value == null || value.isEmpty) {
-                      return 'Lütfen şifrenizi girin.';
-                    }
-                    if (value.length < 6) {
+                    if (value == null || value.length < 6) {
                       return 'Şifre en az 6 karakter olmalıdır.';
                     }
                     return null;
                   },
                 ),
-                SizedBox(height: 24.h),
-                ElevatedButton(
-                  style: ElevatedButton.styleFrom(
-                    minimumSize: Size(double.infinity, 50.h),
-                  ),
-                  onPressed: _loginUser,
-                  child: Text(
-                    'Giriş Yap',
-                    style: TextStyle(fontSize: 16.sp),
+                Align(
+                  alignment: Alignment.centerRight,
+                  child: TextButton(
+                    onPressed: () {
+                      Navigator.push(
+                        context,
+                        MaterialPageRoute(builder: (context) => const ForgotPasswordScreen()),
+                      );
+                    },
+                    child: const Text('Şifremi Unuttum'),
                   ),
                 ),
-                SizedBox(height: 8.h),
-                Row(
-                  mainAxisAlignment: MainAxisAlignment.center,
-                  children: [
-                    const Text("Hesabın yok mu?"),
-                    TextButton(
-                      onPressed: () {
-                        Navigator.push(
-                          context,
-                          MaterialPageRoute(builder: (context) => const RegisterScreen()),
-                        );
-                      },
-                      child: const Text('Kayıt Ol'),
-                    ),
-                  ],
+                const SizedBox(height: 20),
+                _isLoading
+                    ? const CircularProgressIndicator()
+                    : ElevatedButton(
+                  onPressed: _login,
+                  style: ElevatedButton.styleFrom(
+                    minimumSize: const Size(double.infinity, 50),
+                  ),
+                  child: const Text('Giriş Yap'),
+                ),
+                TextButton(
+                  onPressed: () {
+                    Navigator.push(
+                      context,
+                      MaterialPageRoute(builder: (context) => const RegisterScreen()),
+                    );
+                  },
+                  child: const Text('Hesabın yok mu? Kayıt Ol'),
                 ),
               ],
             ),
