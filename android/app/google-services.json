@@ -1,0 +1,29 @@
+{
+  "project_info": {
+    "project_number": "685566059024",
+    "project_id": "erenapp-310a7",
+    "storage_bucket": "erenapp-310a7.firebasestorage.app"
+  },
+  "client": [
+    {
+      "client_info": {
+        "mobilesdk_app_id": "1:685566059024:android:87af84e8e62bfbba3ca095",
+        "android_client_info": {
+          "package_name": "com.example.erenapp"
+        }
+      },
+      "oauth_client": [],
+      "api_key": [
+        {
+          "current_key": "AIzaSyA4fIBvsmxqb9fb9AIa-BavZOHuqQ9s5Ak"
+        }
+      ],
+      "services": {
+        "appinvite_service": {
+          "other_platform_oauth_client": []
+        }
+      }
+    }
+  ],
+  "configuration_version": "1"
+}
