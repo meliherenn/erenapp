@@ -35,14 +35,12 @@ class ProductDetailScreen extends StatelessWidget {
           children: [
             Container(
               height: 300,
-              color: Colors.grey[200], // Resimlerin arkasında boşluk kalırsa diye hafif bir arkaplan rengi
+              color: Colors.grey[200],
               child: PageView.builder(
                 itemCount: product.images.length,
                 itemBuilder: (context, index) {
                   return Image.network(
                     product.images[index],
-                    // DEĞİŞİKLİK BURADA YAPILDI:
-                    // BoxFit.cover yerine BoxFit.contain kullanarak resmin tamamının görünmesini sağlıyoruz.
                     fit: BoxFit.contain,
                     loadingBuilder: (context, child, loadingProgress) {
                       if (loadingProgress == null) return child;

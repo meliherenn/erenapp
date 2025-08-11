@@ -14,11 +14,12 @@ class MainScreen extends StatefulWidget {
 class _MainScreenState extends State<MainScreen> {
   int _selectedIndex = 0;
 
-  static const List<Widget> _widgetOptions = <Widget>[
-    HomeScreen(),
-    FavoritesScreen(),
-    CartScreen(),
-    ProfileScreen(),
+  // Eğer ekranların const kurucusu varsa buradaki çağrıları const yapabilirsin.
+  final List<Widget> _widgetOptions = [
+    const HomeScreen(),
+    const FavoritesScreen(),
+    const CartScreen(),
+    const ProfileScreen(),
   ];
 
   void _onItemTapped(int index) {
@@ -35,7 +36,7 @@ class _MainScreenState extends State<MainScreen> {
         children: _widgetOptions,
       ),
       bottomNavigationBar: BottomNavigationBar(
-        items: const <BottomNavigationBarItem>[
+        items: const [
           BottomNavigationBarItem(
             icon: Icon(Icons.home),
             label: 'Ana Sayfa',
@@ -54,7 +55,7 @@ class _MainScreenState extends State<MainScreen> {
           ),
         ],
         currentIndex: _selectedIndex,
-        type: BottomNavigationBarType.fixed, // Bu satır önemli
+        type: BottomNavigationBarType.fixed,
         selectedItemColor: Colors.deepPurple,
         unselectedItemColor: Colors.grey,
         onTap: _onItemTapped,

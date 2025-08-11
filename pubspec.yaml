@@ -39,6 +39,11 @@ dependencies:
   firebase_auth: ^6.0.0
   cloud_firestore: ^6.0.0
   http: ^1.4.0
+  flutter_svg: ^2.0.10+1
+  flutter_vlc_player: ^7.4.3
+  shared_preferences: ^2.3.2
+  firebase_database: ^12.0.0
+  another_flushbar: ^1.12.30
 
 dev_dependencies:
   flutter_test:
@@ -64,7 +69,11 @@ flutter:
   # the material Icons class.
   uses-material-design: true
   assets:
+    - assets/
     - assets/erenshop.png
+    - assets/erenshop.png
+    - assets/onboarding_assets/
+    - assets/icons/
 
   # To add assets to your application, add an assets section, like this:
   # assets:
