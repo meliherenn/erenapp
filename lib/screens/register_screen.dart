@@ -2,6 +2,7 @@ import 'package:flutter/material.dart';
 import 'package:firebase_auth/firebase_auth.dart';
 import 'package:cloud_firestore/cloud_firestore.dart';
 import 'package:erenapp/screens/login_screen.dart';
+import 'package:intl/intl.dart';
 
 class RegisterScreen extends StatefulWidget {
   const RegisterScreen({super.key});
@@ -18,7 +19,9 @@ class _RegisterScreenState extends State<RegisterScreen> {
   final TextEditingController _emailController = TextEditingController();
   final TextEditingController _passwordController = TextEditingController();
   final TextEditingController _confirmPasswordController = TextEditingController();
+  final TextEditingController _birthDateController = TextEditingController();
 
+  DateTime? _selectedDate;
   bool _isPasswordVisible = false;
   bool _isConfirmPasswordVisible = false;
   bool _isLoading = false;
@@ -29,7 +32,23 @@ class _RegisterScreenState extends State<RegisterScreen> {
     _emailController.dispose();
     _passwordController.dispose();
     _confirmPasswordController.dispose();
+    _birthDateController.dispose();
     super.dispose();
+  }
+
+  Future<void> _selectDate(BuildContext context) async {
+    final DateTime? picked = await showDatePicker(
+      context: context,
+      initialDate: _selectedDate ?? DateTime.now(),
+      firstDate: DateTime(1900),
+      lastDate: DateTime.now(),
+    );
+    if (picked != null && picked != _selectedDate) {
+      setState(() {
+        _selectedDate = picked;
+        _birthDateController.text = DateFormat('dd/MM/yyyy').format(picked);
+      });
+    }
   }
 
   Future<void> _register() async {
@@ -38,7 +57,7 @@ class _RegisterScreenState extends State<RegisterScreen> {
     final password = _passwordController.text.trim();
     final confirmPassword = _confirmPasswordController.text.trim();
 
-    if (nameSurname.isEmpty || email.isEmpty || password.isEmpty || confirmPassword.isEmpty) {
+    if (nameSurname.isEmpty || email.isEmpty || password.isEmpty || confirmPassword.isEmpty || _birthDateController.text.isEmpty) {
       _showSnack('Lütfen tüm alanları doldurun.');
       return;
     }
@@ -58,24 +77,22 @@ class _RegisterScreenState extends State<RegisterScreen> {
     setState(() => _isLoading = true);
 
     try {
-      // 1) Auth oluştur
       final cred = await _auth.createUserWithEmailAndPassword(
         email: email,
         password: password,
       );
 
-      // 2) Firestore'a kaydet
       await _firestore.collection('users').doc(cred.user!.uid).set({
         'uid': cred.user!.uid,
         'email': email,
         'name_surname': nameSurname,
+        'birth_date': _selectedDate != null ? Timestamp.fromDate(_selectedDate!) : null,
         'createdAt': FieldValue.serverTimestamp(),
       });
 
       if (!mounted) return;
       _showSnack('Kayıt başarılı. Giriş ekranına yönlendiriliyorsunuz.', success: true);
 
-      // 3) LoginScreen'e dön
       Navigator.pushReplacement(
         context,
         MaterialPageRoute(builder: (context) => const LoginScreen()),
@@ -111,7 +128,6 @@ class _RegisterScreenState extends State<RegisterScreen> {
         padding: const EdgeInsets.all(16.0),
         child: Column(
           children: [
-            // LOGO
             Image.asset(
               'assets/erenshop.png',
               width: 120,
@@ -138,6 +154,18 @@ class _RegisterScreenState extends State<RegisterScreen> {
                 border: OutlineInputBorder(),
                 prefixIcon: Icon(Icons.email),
               ),
+            ),
+            const SizedBox(height: 16),
+
+            TextField(
+              controller: _birthDateController,
+              readOnly: true,
+              decoration: const InputDecoration(
+                labelText: 'Doğum Tarihi',
+                border: OutlineInputBorder(),
+                prefixIcon: Icon(Icons.calendar_today),
+              ),
+              onTap: () => _selectDate(context),
             ),
             const SizedBox(height: 16),
 

@@ -16,6 +16,7 @@ class _LoginScreenState extends State<LoginScreen> {
   final _passwordController = TextEditingController();
   final _formKey = GlobalKey<FormState>();
   bool _isLoading = false;
+  bool _isPasswordVisible = false;
 
   @override
   void dispose() {
@@ -46,18 +47,28 @@ class _LoginScreenState extends State<LoginScreen> {
         );
       }
     } on FirebaseAuthException catch (e) {
-      String message = 'Bir hata oluştu.';
-      if (e.code == 'user-not-found' || e.code == 'invalid-credential') {
+      String message = 'Beklenmeyen bir hata oluştu. Lütfen tekrar deneyin.';
+      if (e.code == 'user-not-found' || e.code == 'invalid-credential' || e.code == 'wrong-password') {
         message = 'E-posta veya şifre hatalı. Lütfen kontrol edin.';
-      } else if (e.code == 'wrong-password') {
-        message = 'Yanlış şifre girdiniz.';
+      } else if (e.code == 'network-request-failed') {
+        message = 'İnternet bağlantınızı kontrol edin.';
+      } else if (e.code == 'too-many-requests') {
+        message = 'Çok fazla deneme yaptınız. Lütfen bir süre sonra tekrar deneyin.';
       }
+
       if (mounted) {
         ScaffoldMessenger.of(context).showSnackBar(
           SnackBar(content: Text(message)),
         );
       }
-    } finally {
+    } catch (e) {
+      if (mounted) {
+        ScaffoldMessenger.of(context).showSnackBar(
+          const SnackBar(content: Text('Giriş yapılırken bir sorun oluştu.')),
+        );
+      }
+    }
+    finally {
       if (mounted) {
         setState(() {
           _isLoading = false;
@@ -107,12 +118,20 @@ class _LoginScreenState extends State<LoginScreen> {
                 const SizedBox(height: 16),
                 TextFormField(
                   controller: _passwordController,
-                  decoration: const InputDecoration(
+                  obscureText: !_isPasswordVisible,
+                  decoration: InputDecoration(
                     labelText: 'Şifre',
-                    border: OutlineInputBorder(),
-                    prefixIcon: Icon(Icons.lock),
+                    border: const OutlineInputBorder(),
+                    prefixIcon: const Icon(Icons.lock),
+                    suffixIcon: IconButton(
+                      icon: Icon(_isPasswordVisible ? Icons.visibility : Icons.visibility_off),
+                      onPressed: () {
+                        setState(() {
+                          _isPasswordVisible = !_isPasswordVisible;
+                        });
+                      },
+                    ),
                   ),
-                  obscureText: true,
                   validator: (value) {
                     if (value == null || value.length < 6) {
                       return 'Şifre en az 6 karakter olmalıdır.';
